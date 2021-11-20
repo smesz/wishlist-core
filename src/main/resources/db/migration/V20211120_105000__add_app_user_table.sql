@@ -13,4 +13,3 @@ create table if not exists app_user
     roles         varchar,
     user_hash     varchar
 );
--- todo create index on email
