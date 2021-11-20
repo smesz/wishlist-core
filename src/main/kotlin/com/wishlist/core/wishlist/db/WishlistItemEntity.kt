@@ -11,6 +11,6 @@ data class WishlistItemEntity(
     val id: UUID? = null,
 
     val wishlistId: UUID,
-    val itemName: String,
-    val itemDescription: String? = null
+    val name: String,
+    val description: String? = null
 )

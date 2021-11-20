@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.util.*
 
 @Table("wishlist")
-class WishlistEntity(
+data class WishlistEntity(
 
     @Id
     val id: UUID? = null,

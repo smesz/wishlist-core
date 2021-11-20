@@ -1,0 +1,1 @@
+create index if not exists idx_wishlist_owner on wishlist (owner);

@@ -11,5 +11,5 @@ data class WishlistDto(
 
 data class WishlistItemDto(
     val name: String,
-    val description: String?
+    val description: String? = null
 )

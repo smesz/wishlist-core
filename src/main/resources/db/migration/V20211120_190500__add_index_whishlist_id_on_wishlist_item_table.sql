@@ -1,0 +1,1 @@
+create index if not exists idx_wishlist_item_wishlist_id on wishlist_item (wishlist_id);

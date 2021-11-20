@@ -1,11 +1,13 @@
 package com.wishlist.core.wishlist
 
+import com.wishlist.core.user.UserEntity
 import com.wishlist.core.user.UserRepository
 import com.wishlist.core.wishlist.api.*
 import com.wishlist.core.wishlist.db.WishlistEntity
 import com.wishlist.core.wishlist.db.WishlistItemEntity
 import com.wishlist.core.wishlist.db.WishlistItemRepository
 import com.wishlist.core.wishlist.db.WishlistRepository
+import com.wishlist.core.wishlist.exception.UserNotFoundException
 import com.wishlist.core.wishlist.exception.WishlistAlreadyExistsException
 import com.wishlist.core.wishlist.exception.WishlistDoesNotBelongToTheUser
 import org.springframework.stereotype.Service
@@ -21,7 +23,7 @@ class WishlistService(
 ) {
 
     fun createWishlist(ownerEmail: String, createWishlistRequest: CreateWishlistRequest): Mono<WishlistEntity> {
-        return userRepository.findByEmail(ownerEmail).flatMap { user ->
+        return findUser(ownerEmail).flatMap { user ->
             wishlistRepository.findByOwner(user.id!!).collectList().flatMap { ownedWishlists ->
                 if (!isValid(ownedWishlists, createWishlistRequest)) {
                     Mono.error(WishlistAlreadyExistsException(createWishlistRequest.name))
@@ -36,15 +38,15 @@ class WishlistService(
     }
 
     fun getAllWishlists(ownerEmail: String): Mono<WishlistResponseWrapper> {
-        return userRepository.findByEmail(ownerEmail).flatMapMany { user ->
+        return findUser(ownerEmail).flatMapMany { user ->
             wishlistRepository.findByOwner(user.id!!).flatMap { wishlist ->
                 wishlistItemRepository.findByWishlistId(wishlist.id!!).collectList().map { items ->
                     WishlistDto(
                         name = wishlist.name,
                         items = items.map {
                             WishlistItemDto(
-                                name = it.itemName,
-                                description = it.itemDescription
+                                name = it.name,
+                                description = it.description
                             )
                         }
                     )
@@ -65,7 +67,7 @@ class WishlistService(
     ): Mono<WishlistItemEntity> {
 
         // check if the wishlistId actually belongs to the calling user
-        return userRepository.findByEmail(ownerEmail).flatMap { user ->
+        return findUser(ownerEmail).flatMap { user ->
             wishlistRepository.findByOwner(user.id!!).collectList().map { allWishlists ->
                 allWishlists.any { it.id == wishlistId }
             }
@@ -76,8 +78,8 @@ class WishlistService(
                     wishlistItemRepository.save(
                         WishlistItemEntity(
                             wishlistId = wishlistId,
-                            itemName = createWishlistItemRequest.name,
-                            itemDescription = createWishlistItemRequest.description
+                            name = createWishlistItemRequest.name,
+                            description = createWishlistItemRequest.description
                         )
                     )
                 }
@@ -85,8 +87,15 @@ class WishlistService(
         }
     }
 
+    private fun findUser(email: String): Mono<UserEntity> {
+        return userRepository.findByEmail(email)
+            .switchIfEmpty(
+                Mono.error(UserNotFoundException(email))
+            )
+    }
+
     private fun isValid(ownedWishlists: List<WishlistEntity>, createWishlistRequest: CreateWishlistRequest): Boolean {
-        return ownedWishlists.containsName(createWishlistRequest.name)
+        return !ownedWishlists.containsName(createWishlistRequest.name)
     }
 
     private fun persistWishlist(ownerId: UUID, wishlistName: String): Mono<WishlistEntity> {
@@ -106,8 +115,8 @@ class WishlistService(
             .map { itemToAdd ->
                 WishlistItemEntity(
                     wishlistId = wishlist.id!!,
-                    itemName = itemToAdd.name,
-                    itemDescription = itemToAdd.description
+                    name = itemToAdd.name,
+                    description = itemToAdd.description
                 )
             }
 

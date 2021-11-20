@@ -4,6 +4,10 @@ import com.wishlist.core.platform.logger
 import com.wishlist.core.wishlist.api.CreateWishlistItemRequest
 import com.wishlist.core.wishlist.api.CreateWishlistRequest
 import com.wishlist.core.wishlist.api.WishlistResponseWrapper
+import com.wishlist.core.wishlist.db.WishlistEntity
+import com.wishlist.core.wishlist.db.WishlistItemEntity
+import com.wishlist.core.wishlist.exception.WishlistAlreadyExistsException
+import com.wishlist.core.wishlist.exception.WishlistDoesNotBelongToTheUser
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -23,7 +27,7 @@ class WishlistController(
     fun createWishlist(
         principal: Principal,
         @RequestBody createWishlistRequest: CreateWishlistRequest
-    ): Mono<ResponseEntity<Any>> {
+    ): Mono<ResponseEntity<WishlistEntity>> {
         log.debug("Got POST /api/v1/wishlist request with payload: {}", createWishlistRequest)
 
         return wishlistService.createWishlist(principal.name, createWishlistRequest)
@@ -47,12 +51,18 @@ class WishlistController(
         principal: Principal,
         @PathVariable("wishlistId") wishlistId: UUID,
         @RequestBody createWishlistItemRequest: CreateWishlistItemRequest
-    ): Mono<ResponseEntity<Any>> {
+    ): Mono<ResponseEntity<WishlistItemEntity>> {
         log.debug("Got PUT /api/v1/user/wishlist/$wishlistId with payload: {}", createWishlistItemRequest)
 
         return wishlistService.addItemToWishlist(principal.name, wishlistId, createWishlistItemRequest)
             .map {
                 ResponseEntity.ok().body(null)
             }
+    }
+
+    @ExceptionHandler(value = [WishlistAlreadyExistsException::class, WishlistDoesNotBelongToTheUser::class])
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun badRequestExceptionHandler(ex: Exception): String? {
+        return ex.message
     }
 }

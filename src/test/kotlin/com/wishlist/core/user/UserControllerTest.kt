@@ -93,6 +93,6 @@ internal class UserControllerTest {
             .exchange()
 
         // then
-        response.expectStatus().is5xxServerError
+        response.expectStatus().isBadRequest
     }
 }
