@@ -22,9 +22,6 @@ class UserController(
         log.debug("Got POST /api/v1/user request with payload: {}", createUserRequest)
 
         return userService.createUser(createUserRequest)
-            .onErrorContinue(UserAlreadyRegisteredException::class.java) { throwable: Throwable, _: Any ->
-                Mono.just(ResponseEntity.badRequest().body(throwable.message))
-            }
             .map {
                 CreateUserResponse(
                     firstName = it.firstName,

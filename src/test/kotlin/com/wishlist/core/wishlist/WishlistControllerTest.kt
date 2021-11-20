@@ -127,7 +127,7 @@ internal class WishlistControllerTest {
             .exchange()
 
         // then
-        response.expectStatus().isOk
+        response.expectStatus().isNoContent
     }
 
     @Test

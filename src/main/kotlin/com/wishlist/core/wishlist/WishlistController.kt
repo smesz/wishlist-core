@@ -4,8 +4,6 @@ import com.wishlist.core.platform.logger
 import com.wishlist.core.wishlist.api.CreateWishlistItemRequest
 import com.wishlist.core.wishlist.api.CreateWishlistRequest
 import com.wishlist.core.wishlist.api.WishlistResponseWrapper
-import com.wishlist.core.wishlist.db.WishlistEntity
-import com.wishlist.core.wishlist.db.WishlistItemEntity
 import com.wishlist.core.wishlist.exception.WishlistAlreadyExistsException
 import com.wishlist.core.wishlist.exception.WishlistDoesNotBelongToTheUser
 import org.springframework.http.HttpStatus
@@ -27,12 +25,12 @@ class WishlistController(
     fun createWishlist(
         principal: Principal,
         @RequestBody createWishlistRequest: CreateWishlistRequest
-    ): Mono<ResponseEntity<WishlistEntity>> {
+    ): Mono<ResponseEntity<Void>> {
         log.debug("Got POST /api/v1/wishlist request with payload: {}", createWishlistRequest)
 
         return wishlistService.createWishlist(principal.name, createWishlistRequest)
             .map {
-                ResponseEntity(it, HttpStatus.CREATED)
+                ResponseEntity(HttpStatus.CREATED)
             }
     }
 
@@ -51,12 +49,12 @@ class WishlistController(
         principal: Principal,
         @PathVariable("wishlistId") wishlistId: UUID,
         @RequestBody createWishlistItemRequest: CreateWishlistItemRequest
-    ): Mono<ResponseEntity<WishlistItemEntity>> {
+    ): Mono<ResponseEntity<Void>> {
         log.debug("Got PUT /api/v1/user/wishlist/$wishlistId with payload: {}", createWishlistItemRequest)
 
         return wishlistService.addItemToWishlist(principal.name, wishlistId, createWishlistItemRequest)
             .map {
-                ResponseEntity.ok().body(null)
+                ResponseEntity.noContent().build()
             }
     }
 
