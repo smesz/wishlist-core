@@ -1,0 +1,18 @@
+spring:
+  security:
+    user:
+      name: admin
+      password: admin2
+  r2dbc:
+    username: WISHLIST_CORE_USER
+    password: WISHLIST_CORE_PASS
+    url: r2dbc:postgresql://localhost:5432/db
+
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://localhost:5432/db
+    user: WISHLIST_CORE_USER
+    password: WISHLIST_CORE_PASS
+
+  main:
+    banner-mode: off

@@ -1,0 +1,1 @@
+create index if not exists idx_email_app_user on app_user (email);

@@ -1,0 +1,33 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/db
+    username: WISHLIST_CORE_USER
+    password: WISHLIST_CORE_PASS
+    pool:
+      enabled: true
+
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+
+  main:
+    web-application-type: reactive
+
+  flyway:
+    url: jdbc:postgresql://localhost:5432/db
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
+    baseline-on-migrate: true
+    ignore-ignored-migrations: true
+    init-sqls:
+      - CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+  security:
+    user:
+      name: admin
+      password: admin2
+
+hashes:
+  salt: my_salt
+  minLength: 7
