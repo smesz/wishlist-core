@@ -3,12 +3,15 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <root level="ERROR">
+    <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <logger name="org.springframework.security" level="INFO">
+    <logger name="org.springframework.security" level="DEBUG">
         <appender-ref ref="CONSOLE"/>
     </logger>
+
+    <logger name="org.testcontainers" level="INFO"/>
+    <logger name="com.github.dockerjava" level="WARN"/>
 
 </configuration>
