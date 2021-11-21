@@ -1,7 +1,7 @@
 package com.wishlist.core.test
 
-import com.wishlist.core.platform.StringListReadingConverter
-import com.wishlist.core.platform.StringListWritingConverter
+import com.wishlist.core.platform.StringSetReadingConverter
+import com.wishlist.core.platform.StringSetWritingConverter
 import io.r2dbc.spi.ConnectionFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,8 +37,8 @@ class RepositoriesTestConfiguration : AbstractR2dbcConfiguration() {
 
     override fun getCustomConverters(): MutableList<Any> {
         return mutableListOf(
-            StringListReadingConverter(),
-            StringListWritingConverter()
+            StringSetReadingConverter(),
+            StringSetWritingConverter()
         )
     }
 

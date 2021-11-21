@@ -19,8 +19,8 @@ class DatabaseConfiguration : AbstractR2dbcConfiguration() {
 
     override fun getCustomConverters(): MutableList<Any> {
         return mutableListOf(
-            StringListReadingConverter(),
-            StringListWritingConverter()
+            StringSetReadingConverter(),
+            StringSetWritingConverter()
         )
     }
 }
