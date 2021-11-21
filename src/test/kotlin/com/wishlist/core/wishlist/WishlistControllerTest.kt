@@ -1,6 +1,7 @@
 package com.wishlist.core.wishlist
 
 import com.ninjasquad.springmockk.MockkBean
+import com.wishlist.core.test.TestObjects.aWishlistDto
 import com.wishlist.core.test.TestObjects.aWishlistEntity
 import com.wishlist.core.test.TestObjects.aWishlistItemEntity
 import com.wishlist.core.test.TestObjects.aWishlistResponseWrapper
@@ -34,13 +35,16 @@ internal class WishlistControllerTest {
     @DisplayName("should call POST /api/v1/wishlist and create new wishlist")
     @WithMockUser(username = "adam.smith@gmail.com")
     fun shouldCreateWishlist() {
+        // given
+        val email = "adam.smith@gmail.com"
+        val wishlistId = UUID.randomUUID()
+
         // mocks
         every {
-            wishlistService.createWishlist(
-                "adam.smith@gmail.com",
-                any()
-            )
-        } returns Mono.just(aWishlistEntity())
+            wishlistService.createWishlist(email, any())
+        } returns Mono.just(aWishlistEntity().copy(id = wishlistId))
+
+        every { wishlistService.getWishlist(email, wishlistId) } returns Mono.just(aWishlistDto())
 
         // when
         val response = webTestClient
@@ -167,6 +171,44 @@ internal class WishlistControllerTest {
                       ]
                     }
                   ]
+                }
+            """.trimIndent()
+            )
+    }
+
+    @Test
+    @DisplayName("should call GET /api/v1/wishlist/{id} to obtain given wishlist for logged in user")
+    @WithMockUser(username = "adam.smith@gmail.com")
+    fun shouldGetGivenWishlists() {
+        // mocks
+        val wishlistId = UUID.randomUUID()
+        every {
+            wishlistService.getWishlist("adam.smith@gmail.com", wishlistId)
+        } returns Mono.just(aWishlistDto())
+
+        // when
+        val response = webTestClient
+            .mutateWith(csrf())
+            .get()
+            .uri("/api/v1/wishlist/$wishlistId")
+            .exchange()
+
+        // then
+        response.expectStatus().isOk
+            .expectBody().json(
+                """
+                {
+                   "name": "electronics",
+                   "items": [
+                     {
+                       "name": "PS5",
+                       "description": "with blue-ray drive"
+                     },
+                     {
+                       "name": "Xbox series x",
+                       "description": "with game pass subscription"
+                     }
+                    ]
                 }
             """.trimIndent()
             )

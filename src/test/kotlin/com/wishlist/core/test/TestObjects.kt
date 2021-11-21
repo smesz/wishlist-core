@@ -38,6 +38,7 @@ object TestObjects {
     fun aWishlistResponseWrapper() = WishlistResponseWrapper(
         wishlists = listOf(
             WishlistDto(
+                id = UUID.randomUUID(),
                 name = "electronics",
                 items = listOf(
                     WishlistItemDto(
@@ -49,6 +50,21 @@ object TestObjects {
                         description = "with game pass subscription"
                     )
                 )
+            )
+        )
+    )
+
+    fun aWishlistDto() = WishlistDto(
+        id = UUID.randomUUID(),
+        name = "electronics",
+        items = listOf(
+            WishlistItemDto(
+                name = "PS5",
+                description = "with blue-ray drive"
+            ),
+            WishlistItemDto(
+                name = "Xbox series x",
+                description = "with game pass subscription"
             )
         )
     )

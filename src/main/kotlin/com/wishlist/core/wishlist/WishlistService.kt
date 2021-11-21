@@ -1,5 +1,6 @@
 package com.wishlist.core.wishlist
 
+import com.wishlist.core.platform.logger
 import com.wishlist.core.user.UserEntity
 import com.wishlist.core.user.UserRepository
 import com.wishlist.core.wishlist.api.*
@@ -22,6 +23,8 @@ class WishlistService(
     private val wishlistItemRepository: WishlistItemRepository
 ) {
 
+    private val log by logger()
+
     fun createWishlist(ownerEmail: String, createWishlistRequest: CreateWishlistRequest): Mono<WishlistEntity> {
         return findUser(ownerEmail).flatMap { user ->
             wishlistRepository.findByOwner(user.id!!).collectList().flatMap { ownedWishlists ->
@@ -37,11 +40,33 @@ class WishlistService(
         }
     }
 
+    fun getWishlist(ownerEmail: String, wishlistId: UUID): Mono<WishlistDto> {
+        return findUser(ownerEmail).flatMap { user ->
+            wishlistRepository.findByOwnerAndId(user.id!!, wishlistId).flatMap { wishlist ->
+                wishlistItemRepository.findByWishlistId(wishlistId).collectList().map { items ->
+                    WishlistDto(
+                        id = wishlist.id!!,
+                        name = wishlist.name,
+                        items = items.map {
+                            WishlistItemDto(
+                                name = it.name,
+                                description = it.description
+                            )
+                        }
+                    )
+                }
+            }
+        }.doOnNext {
+            log.debug("Returning wishlist $it")
+        }
+    }
+
     fun getAllWishlists(ownerEmail: String): Mono<WishlistResponseWrapper> {
         return findUser(ownerEmail).flatMapMany { user ->
             wishlistRepository.findByOwner(user.id!!).flatMap { wishlist ->
                 wishlistItemRepository.findByWishlistId(wishlist.id!!).collectList().map { items ->
                     WishlistDto(
+                        id = wishlist.id!!,
                         name = wishlist.name,
                         items = items.map {
                             WishlistItemDto(
@@ -81,7 +106,9 @@ class WishlistService(
                             name = createWishlistItemRequest.name,
                             description = createWishlistItemRequest.description
                         )
-                    )
+                    ).doOnSuccess {
+                        log.info("Added new item to the wishlist: {}", it)
+                    }
                 }
             }
         }
@@ -104,7 +131,9 @@ class WishlistService(
                 owner = ownerId,
                 name = wishlistName
             )
-        )
+        ).doOnSuccess {
+            log.info("Saved new wishlist: {}", it)
+        }
     }
 
     private fun persistWishlistItems(
@@ -121,6 +150,9 @@ class WishlistService(
             }
 
         return wishlistItemRepository.saveAll(wishlistItemEntitiesFlux)
+            .doOnNext {
+                log.info("Saved new item {} to the wishlist", it)
+            }
             .then(Mono.just(wishlist))
     }
 
